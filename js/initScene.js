@@ -63,11 +63,14 @@ function initScene() {
 	camera.keysLeft  = [];
 	camera.keysRight = [];
 
+	// Create 1 pointlight and 1 directional light
 	var pointLight = new BABYLON.PointLight('light', new BABYLON.Vector3(-1,4,4), scene);
 	var directionalLight = new BABYLON.DirectionalLight("Dir0", new BABYLON.Vector3(0, -5, 0), scene);
 	speedRate = 0.7;
 	creationSeconds = 1000;
 	
+	
+	//this function updates the rate of the enemies speed and creation every 10s 
 	rateUpdate=function () {
 		if(speedRate<=1.6)
 			speedRate += 0.1;
@@ -77,10 +80,11 @@ function initScene() {
 		clearInterval(creationRate);
 		creationRate = setInterval(createEnemy, creationSeconds);
 		//console.log(creationSeconds);
-	};
-		
+	};		
 	setInterval(rateUpdate, 10000);
 	// Render the Scene
+
+
   	engine.runRenderLoop(function () {
        scene.render();
         if(previous_life!=life && life >= 0) {
@@ -158,7 +162,7 @@ function createRoads(){
 	var cameraPosition = numberOfRoads/2;
 	var roadSpaces = 1.35;
 
-  // Set material of the road (texture)
+  	// Set material of the road (texture)
     var ground = new BABYLON.StandardMaterial('ground', scene);
     var texture = new BABYLON.Texture('others/textures/ground.jpg', scene);
     texture.uScale = 300;
@@ -202,6 +206,7 @@ function createRoads(){
 
 
 function createEnemies(){
+	//when user press longspace, camera is restored to default
 	camera.dispose();
 	camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(roadPosition[2],4,-2), scene);
   	camera.setTarget(new BABYLON.Vector3(roadPosition[2],0,7.5));
@@ -212,9 +217,10 @@ function createEnemies(){
 	camera.keysLeft  = [];
 	camera.keysRight = [];
 
-	// We will import the custom model in the scene
-	BABYLON.SceneLoader.ImportMesh('', 'others/enemy/', 'drone.babylon', scene, function (meshes) {
-        //console.log(roadPosition[2]);
+
+	//import the enemy composed object, adjusting position of its part
+	BABYLON.SceneLoader.ImportMesh('', 'others/enemy/', 'drone.babylon', scene, 
+	function (meshes) {
         var m = [];
 		for(var i = 0;i<meshes.length;i++){
 			m[i] = meshes[i];
@@ -229,12 +235,13 @@ function createEnemies(){
 		m[3].scaling = new BABYLON.Vector3(0.5,0.5,0.5);
 		m[4].scaling = new BABYLON.Vector3(0.45,0.45,0.45);
 				
-		m[0].position = new BABYLON.Vector3(+0.3, 2.1, 1.2);			//antennaDx
-		m[1].position = new BABYLON.Vector3(-0.3, 2.1, 1.2);			//antennaSx
- 		m[2].position = new BABYLON.Vector3(0, 1, 0.5);					//sfera rossa
-		m[3].position = new BABYLON.Vector3(0, 1, 1);					//corpo		
-		m[4].position = new BABYLON.Vector3(+0.35, 0.43, 1.2);			//palline sotto
-        enemy_model = m;
+		m[0].position = new BABYLON.Vector3(+0.3, 2.1, 1.2);		//Right antenna
+		m[1].position = new BABYLON.Vector3(-0.3, 2.1, 1.2);		//Left antenna
+ 		m[2].position = new BABYLON.Vector3(0, 1, 0.5);				//Red Sphere
+		m[3].position = new BABYLON.Vector3(0, 1, 1);				//Enemy Body 
+		m[4].position = new BABYLON.Vector3(+0.35, 0.43, 1.2);		//Back engines
+
+        enemy_model = m;		//here a model is created
     });
 
 	createEnemy = function () {
@@ -260,7 +267,7 @@ function createEnemies(){
 
 function createPlayer(){
 	var initialPosition = 2;
-    // We will import the custom model in the scene
+	//create player
     BABYLON.SceneLoader.ImportMesh('', 'others/player/', 'player.babylon', scene, function (meshes) {
 		player = meshes[0];
 		player.position = new BABYLON.Vector3(1,3.1,4.1);
@@ -316,7 +323,7 @@ function onKeyDown(event) {
 }
 
 function animate(key) {
-    // Get the initial position of our Mesh
+    // Get the initial position of our player
     var positionPlayer = player.position.x;
 
     // Create the animation object
@@ -426,13 +433,18 @@ function animationDead(pos){
 	var newPosition;
 
 	for(var i = 0;i<enemy_model.length;i++){
+	
+	    /****************************
+    	*	Animation Position.x	*
+    	****************************/
+
 		// Get the initial position of our Mesh
 	    positionEnemy = enemies[pos][i].position.x;
 	    // Create the animation object
 	    animateEnemy = new BABYLON.Animation('animateEnemy','position.x',60,BABYLON.Animation.ANIMATIONTYPE_FLOAT,BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE);
 
 	    keys = [];
-	    if(Math.floor(Math.random())==0)
+	    if(Math.floor(Math.random()*10)<5)
 	   		newPosition = positionEnemy+(Math.floor((Math.random() * 4))/10);
 		else
 			newPosition = positionEnemy-(Math.floor((Math.random() * 4))/10);
@@ -448,6 +460,9 @@ function animationDead(pos){
     	// Run the animation
     	scene.beginAnimation(enemies[pos][i], 0, 10, false, 1);
 
+    	/****************************
+    	*	Animation Position.y	*
+    	****************************/
 
 
 		// Get the initial position of our Mesh
@@ -457,7 +472,7 @@ function animationDead(pos){
 
     	keys = [];
 		newPosition;
-    	if(Math.floor(Math.random())==0)
+    	if(Math.floor(Math.random()*10)<5)
 		    newPosition = positionEnemy+(Math.floor((Math.random() * 4))/10);
 		else
 			newPosition = positionEnemy-(Math.floor((Math.random() * 4))/10);
@@ -473,7 +488,9 @@ function animationDead(pos){
     	// Run the animation
     	scene.beginAnimation(enemies[pos][i], 0, 10, false, 1);
     
-    
+    	/****************************
+    	*	Animation Position.z	*
+    	****************************/
     
     	// Get the initial position of our Mesh
     	positionEnemy = enemies[pos][i].position.z;
@@ -483,7 +500,7 @@ function animationDead(pos){
     	keys = [];
 		newPosition;
 	
-		if(Math.floor(Math.random())==0 && i!=2)
+		if(Math.floor(Math.random()*10)<5 && i!=2)
 		    newPosition = positionEnemy+(Math.floor((Math.random() * 4))/10);
 		else
 			newPosition = positionEnemy-(Math.floor((Math.random() * 4))/10);
@@ -509,6 +526,11 @@ function scalingDead(pos){
 	var newPosition;
 
 	for(var i = 0;i<enemy_model.length;i++){
+			
+    	/****************************
+    	*	Animation Scaling.x		*
+    	****************************/
+
 		// Get the initial position of our Mesh
 	    positionEnemy = enemies[pos][i].scaling.x;
 	    // Create the animation object
@@ -527,6 +549,10 @@ function scalingDead(pos){
     	// Run the animation
     	scene.beginAnimation(enemies[pos][i], 0, 30, false, 1);
 
+
+    	/****************************
+    	*	Animation Scaling.y		*
+    	****************************/
 
 
 		// Get the initial position of our Mesh
@@ -547,6 +573,9 @@ function scalingDead(pos){
     	scene.beginAnimation(enemies[pos][i], 0, 30, false, 1);
     
     
+       	/****************************
+    	*	Animation Scaling.z		*
+    	****************************/
     
     	// Get the initial position of our Mesh
     	positionEnemy = enemies[pos][i].scaling.z;
@@ -555,7 +584,7 @@ function scalingDead(pos){
 
     	keys = [];
 	
-		if(Math.floor(Math.random())==0)
+		if(Math.floor(Math.random()*10)<5)
 		    newPosition = positionEnemy+(Math.floor((Math.random() * 4))/10);
 		else
 			newPosition = positionEnemy-(Math.floor((Math.random() * 4))/10);
